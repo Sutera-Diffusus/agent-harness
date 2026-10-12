@@ -12,11 +12,21 @@ const ptys = new Map();   // paneId -> pty process
 const isWin = process.platform === 'win32';
 
 // ---------- CLI detection ----------
+const EXTRA_BIN_DIRS = isWin ? [] : [
+  path.join(os.homedir(), '.local', 'bin'),
+  path.join(os.homedir(), '.kimi-code', 'bin'),
+  '/usr/local/bin',
+  '/opt/homebrew/bin',
+];
 function runWhere(name) {
   try {
     const r = spawnSync(isWin ? 'where' : 'which', [name], {encoding: 'utf8', timeout: 3000, windowsHide: true});
     if (r.status === 0) return r.stdout.split(/\r?\n/).filter(Boolean)[0];
   } catch {}
+  for (const d of EXTRA_BIN_DIRS) {
+    const p = path.join(d, name);
+    try { if (fs.existsSync(p)) return p; } catch {}
+  }
   return null;
 }
 
@@ -94,7 +104,8 @@ function createPty(paneId, cliId, cmd, args, cwd, record, cols, rows) {
       name: 'xterm-256color',
       cols: cols || 80, rows: rows || 24,
       cwd: workdir,
-      env: {...process.env, TERM: 'xterm-256color'},
+      env: {...process.env, TERM: 'xterm-256color',
+        PATH: isWin ? process.env.PATH : (process.env.PATH || '') + ':' + EXTRA_BIN_DIRS.join(':')},
     });
   } catch (e) {
     return {error: e.message};
