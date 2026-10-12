@@ -23,10 +23,19 @@ if [ ! -b "$DEV" ]; then
   echo "错误：$DEV 不是块设备"; exit 1
 fi
 
-# 安全检查：不许清当前系统所在盘
+# 安全检查1:不许清当前系统所在盘
 ROOT_SRC=$(findmnt -n -o SOURCE / 2>/dev/null || echo "")
 if [[ -n "$ROOT_SRC" && "$ROOT_SRC" == *"$DISK"* ]]; then
   echo "拒绝执行：$DEV 是当前正在运行的系统所在盘"; exit 1
+fi
+
+# 安全检查2:拒绝任何有挂载分区的盘(试用环境里U盘就是这种,比如Ventoy挂着的sda)
+if lsblk -nro MOUNTPOINTS "$DEV" 2>/dev/null | grep -q .; then
+  echo "拒绝执行：$DEV 有分区正挂载中(大概率是U盘或在用盘):"
+  lsblk -o NAME,SIZE,FSTYPE,LABEL,MOUNTPOINTS "$DEV"
+  echo ""
+  echo "如果你确定这就是要清的内置硬盘,请先: sudo umount ${DEV}* "
+  exit 1
 fi
 
 echo ""
