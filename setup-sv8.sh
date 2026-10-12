@@ -2,8 +2,11 @@
 # ═══════════════════════════════════════════════════════════════
 #  harness · SV8 一站式部署（裸 Ubuntu Server → 宫格终端全屏自启）
 #
-#  用法（SV8 上执行）：
+#  用法（SV8 上执行，二选一）：
 #    bash <(curl -fsSL https://github.com/Sutera-Diffusus/agent-harness/releases/download/v1.0.0/setup-sv8.sh)
+#    bash <(wget -qO-   https://github.com/Sutera-Diffusus/agent-harness/releases/download/v1.0.0/setup-sv8.sh)
+#
+#  本机只需：Ubuntu Server + python3 + 网络。其余全部自动装。
 #
 #  全流程：系统依赖 → XFCE 桌面+自动登录 → Node 22 → 字体 → 拉源码 → 装依赖 → 开机自启
 # ═══════════════════════════════════════════════════════════════
@@ -18,13 +21,13 @@ step() { echo ""; echo "==> [$1/7] $2"; }
 step 1 "系统依赖（node-pty 编译 + Electron 运行库）"
 sudo apt update -qq
 sudo apt install -y -qq --no-install-recommends \
-  build-essential python3 git curl ca-certificates unzip \
+  build-essential python3 git curl wget ca-certificates unzip fontconfig \
   libgtk-3-0 libnss3 libxss1 libxtst6 xauth \
   libasound2t64 2>/dev/null || sudo apt install -y -qq --no-install-recommends libasound2
 
 step 2 "XFCE 轻桌面 + LightDM 自动登录"
 sudo apt install -y -qq --no-install-recommends \
-  xfce4 lightdm xorg fonts-noto-cjk fonts-noto-color-emoji
+  xfce4 lightdm xorg fontconfig fonts-noto-cjk fonts-noto-color-emoji
 printf '[Seat:*]\nautologin-user=%s\nautologin-user-timeout=0\n' "$USER" \
   | sudo tee /etc/lightdm/lightdm.conf.d/50-autologin.conf > /dev/null
 
