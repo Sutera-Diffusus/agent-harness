@@ -1,0 +1,31 @@
+name: build-linux-pty
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: compile node-pty linux-x64
+        run: |
+          mkdir -p /tmp/pty && cd /tmp/pty
+          npm init -y >/dev/null
+          npm install node-pty@1.1.0 --no-audit --no-fund
+          echo "=== build outputs ==="
+          find /tmp/pty/node_modules/node-pty/build -type f | head -10
+          ls /tmp/pty/node_modules/node-pty/prebuilds/ 2>/dev/null || true
+      - name: package runtime files
+        run: |
+          SRC=/tmp/pty/node_modules/node-pty
+          OUT=/tmp/node-pty-linux-x64
+          mkdir -p $OUT/build $OUT/lib
+          cp -r $SRC/build/Release $OUT/build/ 2>/dev/null || true
+          cp -r $SRC/lib/* $OUT/lib/
+          cp $SRC/package.json $OUT/
+          cd $OUT && tar -czf /tmp/node-pty-linux-x64.tar.gz .
+      - uses: actions/upload-artifact@v4
+        with:
+          name: node-pty-linux-x64
+          path: /tmp/node-pty-linux-x64.tar.gz
