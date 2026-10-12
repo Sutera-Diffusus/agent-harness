@@ -1,0 +1,31 @@
+# electron-builder 打包配置（需要网络安装 electron-builder 后使用）
+appId: com.harness.console
+productName: harness
+directories:
+  output: dist
+
+files:
+  - main.js
+  - preload.js
+  - renderer.js
+  - index.html
+  - vendor/**/*
+  - package.json
+  - node_modules/node-pty/**/*
+
+asar: true
+
+mac:
+  category: public.app-category.developer-tools
+  target:
+    - zip        # zip 可在任意平台打包；签名 dmg 需 macOS 主机
+  icon: build/icon.icns
+
+win:
+  target:
+    - nsis
+  icon: build/icon.ico
+
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true

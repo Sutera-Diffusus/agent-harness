@@ -1,0 +1,14 @@
+{
+  "name": "agent-harness",
+  "version": "0.1.0",
+  "description": "SV8 harness: grid of real CLI terminals (codex/omp/dsh/...)",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {},
+  "dependencies": {
+    "electron": "^33",
+    "node-pty": "^1.0.0"
+  }
+}
