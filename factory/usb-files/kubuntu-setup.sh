@@ -80,6 +80,17 @@ else
 fi
 chmod +x "$HOME_U/.local/bin/codex" "$HOME_U/.local/bin/omp" "$HOME_U/.local/bin/kimi" 2>/dev/null || true
 
+# ── 3.5 远程操控 ToDesk(bundle 里带了 deb 才装) ──
+TODESK_DEB=$(ls "$BUNDLE"/todesk*.deb 2>/dev/null | head -1)
+if [ -n "$TODESK_DEB" ]; then
+  log "ToDesk 离线安装:$TODESK_DEB"
+  apt-get install -y -qq "$TODESK_DEB" 2>/dev/null \
+  || { dpkg -i "$TODESK_DEB" || true; apt-get install -y -qq -f || true; }
+  systemctl enable todeskd 2>/dev/null || true
+else
+  log "bundle 里没有 ToDesk 包,跳过(可选)。要远程操控:SV8 浏览器开 todesk.com/linux.html → Debian/Ubuntu/Mint (x64) 下载,然后: sudo apt install ~/Downloads/todesk*.deb"
+fi
+
 for rc in "$HOME_U/.bashrc" "$HOME_U/.zshrc"; do
   [ -f "$rc" ] || touch "$rc"
   grep -q 'local/bin' "$rc" || echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$rc"
@@ -142,6 +153,7 @@ for c in codex omp kimi harness; do
   [ -x "$HOME_U/.local/bin/$c" ] && echo "  [✓] $c" || err "$c 没装上"
 done
 [ -f "$HOME_U/.config/autostart/harness.desktop" ] && echo "  [✓] 开机自启项" || err "自启项没写上"
+if dpkg -l todesk 2>/dev/null | grep -q '^ii'; then echo "  [✓] ToDesk(远程操控)"; else echo "  [-] ToDesk 未装(可选;SV8 浏览器开 todesk.com/linux.html 下 x64 deb 装上)"; fi
 
 echo ""
 if [ "$FAIL" -eq 0 ]; then
